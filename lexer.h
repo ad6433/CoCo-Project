@@ -1,0 +1,21 @@
+/*
+ @Group No.:    27
+ @Authors:
+    Aditya Agrawal    2022A7PS0160P
+    Samarth           2022A7PS0096P
+    Shashank Jha      2022A7PS1186P
+    Shikhar Singh     2022A7PS1170P
+*/
+
+#ifndef LEXER_H
+#define LEXER_H
+
+#endif //LEXER_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "lexerDef.h"
+
+FILE *getStream(FILE* fp);
+tokenInfo getNextToken(twinBuffer B);
+void removeComments(char* testcaseFileName, char* cleanFileName);
