@@ -12,10 +12,10 @@
 
 #endif //LEXER_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "lexerDef.h"
 
-FILE *getStream(FILE* fp);
-tokenInfo getNextToken(twinBuffer B);
+FILE *getStream(FILE* fp, twinBuffer *B);
+void initializeTwinBuffer(twinBuffer *B);
+char getNextChar(twinBuffer *B, FILE* fp);
+tokenInfo getNextToken(twinBuffer *B, FILE* fp);
 void removeComments(char* testcaseFileName, char* cleanFileName);

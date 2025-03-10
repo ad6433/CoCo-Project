@@ -1,4 +1,5 @@
-test*
 .clang-tidy
 .clang-format
 .idea
+*.o
+*_exe

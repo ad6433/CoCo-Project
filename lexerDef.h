@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_LEXEME_SIZE 1000
 #define MAX_TOKEN_SIZE 15
@@ -21,7 +22,7 @@
 
 typedef struct {
     int lineNumber;
-    char token[MAX_TOKEN_SIZE];
+    char type[MAX_TOKEN_SIZE];
     char lexeme[MAX_LEXEME_SIZE];
 } tokenInfo;
 
