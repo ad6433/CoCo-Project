@@ -2,26 +2,6 @@
 
 #include "lexer.h"
 
-void twinBufferDebug(twinBuffer *B)
-{
-    printf("------------------BUFFER BEGINS------------------------\n");
-    printf("buffer[0]:\t%s\n",B->buffer[0]);
-    printf("buffer[1]:\t%s\n",B->buffer[1]);
-    printf("currentBuffer:\t%d\n",B->currentBuffer);
-    printf("currentPosition:\t%d\n",B->currentPosition);
-    printf("lineNumber:\t%d\n",B->lineNumber);
-    printf("------------------BUFFER ENDS------------------------\n");
-}
-
-void tokenInfoDebug(tokenInfo *token)
-{
-    printf("------------------TOKEN BEGINS------------------------\n");
-    printf("lineNumber:\t%d\n",token->lineNumber);
-    printf("type:\t%s\n",token->type);
-    printf("lexeme:\t%s\n",token->lexeme);
-    printf("------------------TOKEN ENDS------------------------\n");
-}
-
 int main()
 {
     FILE *fp;
@@ -34,10 +14,26 @@ int main()
     twinBuffer B;
     initializeTwinBuffer(&B);
     fp=getStream(fp, &B);
-    while (1)
-    {
+
+//    FOR TESTING getNextChar()
+//    while (1)
+//    {
+//		char c=getNextChar(&B,fp);
+//		printf("%c",c);
+////        twinBufferDebug(&B);
+//        if (feof(fp)) break;
+//    }
+
+	while (1) {
         tokenInfo token=getNextToken(&B, fp);
+        if (token.type[0]=='\0' && token.lexeme[0]=='\0') {
+            if (feof(fp)) {
+            	printf("Reached EOF\n");
+            	break;
+            }
+            else continue;
+        }
         tokenInfoDebug(&token);
-    }
+	}
     return 0;
 }

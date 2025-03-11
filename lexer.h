@@ -19,3 +19,5 @@ void initializeTwinBuffer(twinBuffer *B);
 char getNextChar(twinBuffer *B, FILE* fp);
 tokenInfo getNextToken(twinBuffer *B, FILE* fp);
 void removeComments(char* testcaseFileName, char* cleanFileName);
+void twinBufferDebug(twinBuffer *B);
+void tokenInfoDebug(tokenInfo *token);

@@ -9,21 +9,45 @@
 
 #include "lexer.h"
 
+void twinBufferDebug(twinBuffer *B)
+{
+    printf("------------------BUFFER BEGINS------------------------\n");
+    printf("buffer[0]:\t%s\n",B->buffer[0]);
+    printf("buffer[1]:\t%s\n",B->buffer[1]);
+    printf("currentBuffer:\t%d\n",B->currentBuffer);
+    printf("currentPosition:\t%d\n",B->currentPosition);
+    printf("lineNumber:\t%d\n",B->lineNumber);
+    printf("------------------BUFFER ENDS------------------------\n");
+}
+
+void tokenInfoDebug(tokenInfo *token)
+{
+    printf("------------------TOKEN BEGINS-------------------------------------------------\n");
+    printf("lineNumber:\t%d\n",token->lineNumber);
+    printf("type:\t%s\n",token->type);
+    printf("lexeme:\t%s\n",token->lexeme);
+    printf("------------------TOKEN ENDS---------------------------------------------------\n");
+}
+
 FILE *getStream(FILE *fp, twinBuffer *B) {
-//    printf("\n------ getStream ------\n");
     if (fp==NULL) {
         printf("Error opening file\n");
         exit(1);
     }
-    if (fgets(B->buffer[B->currentBuffer], MAX_BUFFER_SIZE, fp) == NULL) {
-        printf("Error reading file\n");
-        exit(1);
+    char* buf=fgets(B->buffer[B->currentBuffer], MAX_BUFFER_SIZE, fp);
+    if (buf==NULL) {
+        if (feof(fp)) {
+            printf("Reached EOF\n");
+        }
+        else {
+            printf("Error reading file\n");
+            exit(1);
+        }
     }
     return fp;
 }
 
 void initializeTwinBuffer(twinBuffer *B) {
-//    printf("\n------ initializeTwinBuffer ------\n");
     B->currentBuffer = 0;
     memset(B->buffer[B->currentBuffer], '\0', MAX_BUFFER_SIZE);
     memset(B->buffer[B->currentBuffer^1], '\0', MAX_BUFFER_SIZE);
@@ -32,20 +56,24 @@ void initializeTwinBuffer(twinBuffer *B) {
 }
 
 char getNextChar(twinBuffer *B, FILE* fp) {
-//    printf("\n------ getNextChar ------\n");
-    if (B->currentPosition >= MAX_BUFFER_SIZE || B->buffer[B->currentBuffer][B->currentPosition] == '\0') {
+    if (B->currentPosition >= MAX_BUFFER_SIZE) {
         B->currentBuffer^=1;
         fp=getStream(fp, B);
         B->currentPosition = 0;
     }
-    if (B->buffer[B->currentBuffer][B->currentPosition] == '\n') {
+    char c=B->buffer[B->currentBuffer][B->currentPosition++];
+    if (c == '\0') {
+        B->currentBuffer^=1;
+        fp=getStream(fp, B);
+        B->currentPosition = 0;
+    }
+    if (c == '\n') {
         B->lineNumber++;
     }
-    return B->buffer[B->currentBuffer][B->currentPosition++];
+    return c;
 }
 
 tokenInfo getNextToken(twinBuffer *B, FILE* fp) {
-//    printf("\n------ getNextToken ------\n");
     tokenInfo token;
     token.lexeme[0] = '\0';
     token.type[0] = '\0';
@@ -53,11 +81,17 @@ tokenInfo getNextToken(twinBuffer *B, FILE* fp) {
     char currentChar;
     while (1) {
         currentChar=getNextChar(B, fp);
+        if (currentChar == '\0') {
+            return token;
+        }
         strcat(token.lexeme, &currentChar);
+        if (currentChar == '\n') {
+//            B->lineNumber++;
+        }
         switch (state) {
             case 0:
-                if (currentChar == '\0') {
-                    return token;
+                if (currentChar == '\n' || currentChar == ' ' || currentChar == '\t') {
+                    token.lexeme[0] = '\0';
                 }
                 else if (currentChar == ']') {
                     strcat(token.type, "TK_SQR");
@@ -171,11 +205,23 @@ tokenInfo getNextToken(twinBuffer *B, FILE* fp) {
                 }
                 break;
             case 101:
-                if (currentChar=='\n') {
-                    strcat(token.type, "TK_COMMENT");
-                    token.lineNumber = B->lineNumber;
-                    return token;
+                while (currentChar != '\n') {
+                    currentChar = getNextChar(B, fp);
+//                    twinBufferDebug(B);
+//                    if (currentChar == '\0') {
+//                        if (feof(fp)) {
+//                            token.lexeme[0] = '\0';
+//                			strcat(token.type, "TK_COMMENT");
+//                            token.lineNumber = B->lineNumber;
+//                            return token;
+//                        }
+//                    }
                 }
+                token.lexeme[0] = '\0';
+                strcat(token.type, "TK_COMMENT");
+                token.lineNumber = B->lineNumber-1;
+                return token;
+                break;
         }
     }
     return token;
