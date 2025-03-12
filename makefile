@@ -2,12 +2,12 @@
 
 test: test_exe
 	./test_exe
-test_exe: test.o lexer.o
-	gcc -o test_exe test.o lexer.o
+test_exe: test.o lexer2.o
+	gcc -o test_exe test.o lexer2.o
 test.o: test.c
 	gcc -c test.c
-lexer.o: lexer.c
-	gcc -c lexer.c
+lexer2.o: lexer2.c
+	gcc -c lexer2.c
 clean:
 	rm *.o
 	rm *_exe

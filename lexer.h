@@ -14,10 +14,10 @@
 
 #include "lexerDef.h"
 
-FILE *getStream(FILE* fp, twinBuffer *B);
-void initializeTwinBuffer(twinBuffer *B);
-char getNextChar(twinBuffer *B, FILE* fp);
-tokenInfo getNextToken(twinBuffer *B, FILE* fp);
+FILE *getStream(twinBuffer *B);
+void initializeTwinBuffer(twinBuffer *B, FILE* fp);
+char getNextChar(twinBuffer *B);
+tokenInfo getNextToken(twinBuffer *B);
 void removeComments(char* testcaseFileName, char* cleanFileName);
 void twinBufferDebug(twinBuffer *B);
 void tokenInfoDebug(tokenInfo *token);

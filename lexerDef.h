@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAX_LEXEME_SIZE 1000
 #define MAX_TOKEN_SIZE 15
@@ -24,6 +25,7 @@ typedef struct {
     int lineNumber;
     char type[MAX_TOKEN_SIZE];
     char lexeme[MAX_LEXEME_SIZE];
+    bool end;
 } tokenInfo;
 
 typedef struct {
@@ -31,4 +33,5 @@ typedef struct {
     int currentBuffer;
     int currentPosition;
     int lineNumber;
+    FILE* fp;
 } twinBuffer;

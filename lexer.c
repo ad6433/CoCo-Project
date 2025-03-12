@@ -11,22 +11,22 @@
 
 void twinBufferDebug(twinBuffer *B)
 {
-    printf("------------------BUFFER BEGINS------------------------\n");
+    printf("------------------BUFFER STATUS BEGINS----------------------\n");
     printf("buffer[0]:\t%s\n",B->buffer[0]);
     printf("buffer[1]:\t%s\n",B->buffer[1]);
     printf("currentBuffer:\t%d\n",B->currentBuffer);
     printf("currentPosition:\t%d\n",B->currentPosition);
     printf("lineNumber:\t%d\n",B->lineNumber);
-    printf("------------------BUFFER ENDS------------------------\n");
+    printf("------------------BUFFER STATUS ENDS------------------------\n");
 }
 
 void tokenInfoDebug(tokenInfo *token)
 {
-    printf("------------------TOKEN BEGINS-------------------------------------------------\n");
+    printf("------------------TOKEN STATUS BEGINS-----------------------------------------\n");
     printf("lineNumber:\t%d\n",token->lineNumber);
     printf("type:\t%s\n",token->type);
     printf("lexeme:\t%s\n",token->lexeme);
-    printf("------------------TOKEN ENDS---------------------------------------------------\n");
+    printf("------------------TOKEN STATUS ENDS-------------------------------------------\n");
 }
 
 FILE *getStream(FILE *fp, twinBuffer *B) {
@@ -222,6 +222,8 @@ tokenInfo getNextToken(twinBuffer *B, FILE* fp) {
                 token.lineNumber = B->lineNumber-1;
                 return token;
                 break;
+            case 36:
+
         }
     }
     return token;
