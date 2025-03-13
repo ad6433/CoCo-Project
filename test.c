@@ -5,7 +5,7 @@
 int main()
 {
     FILE *fp;
-    fp = fopen("test_ct1.txt", "r");
+    fp = fopen("test_t2.txt", "r");
     if (fp == NULL)
     {
         printf("Error in opening file\n");

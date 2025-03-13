@@ -394,10 +394,16 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     state=12;
                 }
                 else {
-                    strcat(token.type, "TK_ID");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
-                    return token;
+                    if (strlen(token.lexeme)<=20) {
+                        strcat(token.type, "TK_ID");
+                        return token;
+                    }
+                    else {
+                        strcat(token.type, "TK_ERROR");
+                        return token;
+                    }
                 }
                 break;
             case 12:
@@ -405,9 +411,16 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     state=12;
                 }
                 else {
-                    strcat(token.type, "TK_ID");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    if (strlen(token.lexeme)<=20) {
+                        strcat(token.type, "TK_ID");
+                        return token;
+                    }
+                    else {
+                        strcat(token.type, "TK_ERROR");
+                        return token;
+                    }
                     return token;
                 }
                 break;
@@ -626,6 +639,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     return token;
                 }
                 else {
+                    token.lexeme[strlen(token.lexeme)-1]='\0';
                     strcat(token.type, "TK_ERROR");
                     retract(B,1);
                     return token;
