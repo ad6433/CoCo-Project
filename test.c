@@ -5,7 +5,7 @@
 int main()
 {
     FILE *fp;
-    fp = fopen("test_t2.txt", "r");
+    fp = fopen("test_t1.txt", "r");
     if (fp == NULL)
     {
         printf("Error in opening file\n");
@@ -67,7 +67,7 @@ int main()
     // 	}
 
     // Testing removeComments
-    removeComments("test_ct1.txt", "clean_ct1.txt");
+    removeComments("test_t1.txt", "clean_t1.txt");
 
     return 0;
 }

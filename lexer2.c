@@ -122,6 +122,9 @@ void initializeLookupTable(HashMap* lookupTable) {
 
 // ------------------------------------------------- Lexer functions ----------------------------------------------------
 
+// Global line number tracker
+int currentLineNumber = 1;
+
 FILE *getStream(twinBuffer *B) {
     int targetBuffer = B->currentBuffer;
     // memset(B->buffer[targetBuffer], '\0', MAX_BUFFER_SIZE);
@@ -131,35 +134,95 @@ FILE *getStream(twinBuffer *B) {
     return B->fp;
 }
 
+// void initializeTwinBuffer(twinBuffer *B, FILE *fp) {
+//     B->fp=fp;
+//     B->currentPosition=0;
+//     B->currentBuffer=0;
+//     B->lineNumber=1;
+//     memset(B->buffer[0], '\0', MAX_BUFFER_SIZE);
+//     memset(B->buffer[1], '\0', MAX_BUFFER_SIZE);
+// }
+
 void initializeTwinBuffer(twinBuffer *B, FILE *fp) {
-    B->fp=fp;
-    B->currentPosition=0;
-    B->currentBuffer=0;
-    B->lineNumber=1;
+    B->fp = fp;
+    B->currentPosition = 0;
+    B->currentBuffer = 0;
+    B->lineNumber = 1;
+    currentLineNumber = 1; // Initialize global line number
     memset(B->buffer[0], '\0', MAX_BUFFER_SIZE);
     memset(B->buffer[1], '\0', MAX_BUFFER_SIZE);
 }
 
+// char getNextChar(twinBuffer *B) {
+//     // Check if buffer needs refill (end of current buffer reached)
+//     if (B->currentPosition >= MAX_BUFFER_SIZE-1) {
+//         B->currentBuffer = 1 - B->currentBuffer;
+//         // Refill the INACTIVE buffer (twin buffer pattern)
+//         getStream(B);
+        
+//         B->currentPosition = 0;
+//     }
+
+//     // Get current character from active buffer
+//     char c = B->buffer[B->currentBuffer][B->currentPosition++];
+
+//     // Handle newline tracking
+//     if (c == '\n') {
+//         B->lineNumber++;
+//     }
+
+//     return c;
+// }
+
 char getNextChar(twinBuffer *B) {
-    // Check if buffer needs refill (end of current buffer reached)
+    // Check if buffer needs refill
     if (B->currentPosition >= MAX_BUFFER_SIZE-1) {
         B->currentBuffer = 1 - B->currentBuffer;
-        // Refill the INACTIVE buffer (twin buffer pattern)
         getStream(B);
-        
         B->currentPosition = 0;
     }
-
-    // Get current character from active buffer
+    
+    // Get current character
     char c = B->buffer[B->currentBuffer][B->currentPosition++];
-
+    
     // Handle newline tracking
     if (c == '\n') {
         B->lineNumber++;
+        currentLineNumber++; // Update global line number
     }
-
+    
     return c;
 }
+
+// void retract(twinBuffer *B, int n) {
+//     // Handle invalid retraction amount
+//     if (n <= 0) return;
+    
+//     int currentPos = B->currentPosition;
+//     int currentBuf = B->currentBuffer;
+    
+//     // If we can retract within the current buffer
+//     if (currentPos >= n) {
+//         B->currentPosition -= n;
+//         return;
+//     }
+    
+//     // We need to switch buffers
+//     // First retract what we can in the current buffer
+//     n -= currentPos;
+    
+//     // Switch to the other buffer
+//     B->currentBuffer = 1 - currentBuf;
+    
+//     // Position at the end of the other buffer
+//     // MAX_BUFFER_SIZE-1 because the last position is for '\0'
+//     B->currentPosition = MAX_BUFFER_SIZE - 1 - n;
+    
+//     // Ensure we don't go below 0
+//     if (B->currentPosition < 0) {
+//         B->currentPosition = 0;
+//     }
+// }
 
 void retract(twinBuffer *B, int n) {
     // Handle invalid retraction amount
@@ -167,37 +230,61 @@ void retract(twinBuffer *B, int n) {
     
     int currentPos = B->currentPosition;
     int currentBuf = B->currentBuffer;
+    int newlinesRetracted = 0;
     
     // If we can retract within the current buffer
     if (currentPos >= n) {
+        // Count newlines in the retraction range
+        for (int i = currentPos - n; i < currentPos; i++) {
+            if (i >= 0 && B->buffer[currentBuf][i] == '\n') {
+                newlinesRetracted++;
+            }
+        }
         B->currentPosition -= n;
-        return;
+    } else {
+        // We need to switch buffers
+        // First count newlines in current buffer's retraction range
+        for (int i = 0; i < currentPos; i++) {
+            if (B->buffer[currentBuf][i] == '\n') {
+                newlinesRetracted++;
+            }
+        }
+        
+        // Retract what we can in current buffer
+        n -= currentPos;
+        
+        // Switch to other buffer
+        B->currentBuffer = 1 - currentBuf;
+        
+        // Position at end of other buffer minus remaining retraction
+        B->currentPosition = MAX_BUFFER_SIZE - 1 - n;
+        if (B->currentPosition < 0) {
+            B->currentPosition = 0;
+        }
+        
+        // Count newlines in other buffer's retraction range
+        for (int i = B->currentPosition; i < MAX_BUFFER_SIZE - 1; i++) {
+            if (B->buffer[B->currentBuffer][i] == '\n') {
+                newlinesRetracted++;
+            }
+        }
     }
     
-    // We need to switch buffers
-    // First retract what we can in the current buffer
-    n -= currentPos;
-    
-    // Switch to the other buffer
-    B->currentBuffer = 1 - currentBuf;
-    
-    // Position at the end of the other buffer
-    // MAX_BUFFER_SIZE-1 because the last position is for '\0'
-    B->currentPosition = MAX_BUFFER_SIZE - 1 - n;
-    
-    // Ensure we don't go below 0
-    if (B->currentPosition < 0) {
-        B->currentPosition = 0;
-    }
+    // Adjust both line number trackers based on newlines retracted
+    B->lineNumber -= newlinesRetracted;
+    currentLineNumber -= newlinesRetracted;
 }
 
 tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
-    int state=0;
+    int state = 0;
     tokenInfo token;
-    token.end=false;
-    token.lexeme[0]='\0';
-    token.type[0]='\0';
-    token.lineNumber=B->lineNumber;
+    token.end = false;
+    token.lexeme[0] = '\0';
+    token.type[0] = '\0';
+    
+    // Record the starting line number for this token
+    token.lineNumber = currentLineNumber;
+    
     char currentChar;
     while (1) {
         // printf("state=%d\n", state);
@@ -209,63 +296,80 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
         switch (state) {
             case 0:
                 if (currentChar=='\0') {
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='\n' || currentChar=='\t' || currentChar==' ') {
                     token.lexeme[strlen(token.lexeme)-1]='\0';
-                    if (strlen(token.lexeme)) return token;
+                    if (strlen(token.lexeme)) {
+                        token.lineNumber = currentLineNumber;
+                        return token;
+                    }
                     state = 0;
                 }
                 else if (currentChar==']') {
                     strcat(token.type, "TK_SQR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='[') {
                     strcat(token.type, "TK_SQL");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar==',') {
                     strcat(token.type, "TK_COMMA");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar==';') {
                     strcat(token.type, "TK_SEM");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar==':') {
                     strcat(token.type, "TK_COLON");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='.') {
                     strcat(token.type, "TK_DOT");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar==')') {
                     strcat(token.type, "TK_CL");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='(') {
                     strcat(token.type, "TK_OP");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='~') {
                     strcat(token.type, "TK_NOT");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='+') {
                     strcat(token.type, "TK_PLUS");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='-') {
                     strcat(token.type, "TK_MINUS");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='*') {
                     strcat(token.type, "TK_MUL");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='/') {
                     strcat(token.type, "TK_DIV");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else if (currentChar=='%') {
@@ -306,6 +410,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -315,12 +420,14 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else if (currentChar=='=') {
                     strcat(token.type, "TK_LE");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_LT");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -332,18 +439,21 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     token.lexeme[strlen(token.lexeme)-2]='\0';
                     strcat(token.type, "TK_LT");
                     retract(B, 2);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 3:
                 if (currentChar=='-') {
                     strcat(token.type, "TK_ASSIGNOP");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     token.lexeme[strlen(token.lexeme)-2]='\0';
                     strcat(token.type, "TK_LT");
                     retract(B, 3);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -357,10 +467,13 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     char* value=search(lookupTable, token.lexeme);
                     if (strcmp(value, "Not found")) {
                         strcat(token.type, value);
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                     else {
                         strcat(token.type, "TK_FIELDID");
+                        insert(*lookupTable, token.lexeme, "TK_FIELDID");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                 }
@@ -378,10 +491,13 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     char* value=search(lookupTable, token.lexeme);
                     if (strcmp(value, "Not found")) {
                         strcat(token.type, value);
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                     else {
                         strcat(token.type, "TK_FIELDID");
+                        insert(*lookupTable, token.lexeme, "TK_FIELDID");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                 }
@@ -398,10 +514,12 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     retract(B, 1);
                     if (strlen(token.lexeme)<=20) {
                         strcat(token.type, "TK_ID");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                     else {
                         strcat(token.type, "TK_ERROR");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                 }
@@ -415,12 +533,15 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     retract(B, 1);
                     if (strlen(token.lexeme)<=20) {
                         strcat(token.type, "TK_ID");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
                     else {
                         strcat(token.type, "TK_ERROR");
+                        token.lineNumber = currentLineNumber;
                         return token;
                     }
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -435,6 +556,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     strcat(token.type, "TK_NUM");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -444,6 +566,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -455,6 +578,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     strcat(token.type, "TK_ERROR");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -466,6 +590,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     strcat(token.type, "TK_RNUM");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -478,6 +603,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -487,16 +613,19 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 21:
                 if (currentChar>='0' && currentChar<='9') {
                     strcat(token.type, "TK_RNUM");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -506,6 +635,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -517,6 +647,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     strcat(token.type, "TK_RUID");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -526,6 +657,7 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -542,12 +674,14 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     char* value=search(lookupTable, token.lexeme);
                     if (strcmp(value, "Not found")) {
                         strcat(token.type, value);
-                        return token;
+                        token.lineNumber = currentLineNumber;
+                    return token;
                     }
                     else {
                         strcat(token.type, "TK_FUNID");
-
-                        return token;
+                        insert(*lookupTable, token.lexeme, "TK_FUNID");
+                        token.lineNumber = currentLineNumber;
+                    return token;
                     }
                 }
                 break;
@@ -561,23 +695,28 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     char* value=search(lookupTable, token.lexeme);
                     if (strcmp(value, "Not found")) {
                         strcat(token.type, value);
-                        return token;
+                        token.lineNumber = currentLineNumber;
+                    return token;
                     }
                     else {
                         strcat(token.type, "TK_FUNID");
-                        return token;
+                        insert(*lookupTable, token.lexeme, "TK_FUNID");
+                        token.lineNumber = currentLineNumber;
+                    return token;
                     }
                 }
                 break;
             case 30:
                 if (currentChar=='=') {
                     strcat(token.type, "TK_GE");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_GT");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -589,18 +728,21 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                     strcat(token.type, "TK_ERROR");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 34:
                 if (currentChar=='&') {
                     strcat(token.type, "TK_AND");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     retract(B, 1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
@@ -610,45 +752,54 @@ tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable) {
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 37:
                 if (currentChar=='@') {
                     strcat(token.type, "TK_OR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 39:
                 if (currentChar=='=') {
                     strcat(token.type, "TK_NE");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     strcat(token.type, "TK_ERROR");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 41:
                 if (currentChar=='=') {
                     strcat(token.type, "TK_EQ");
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 else {
                     token.lexeme[strlen(token.lexeme)-1]='\0';
                     strcat(token.type, "TK_ERROR");
                     retract(B,1);
+                    token.lineNumber = currentLineNumber;
                     return token;
                 }
                 break;
             case 101:
                 if (currentChar=='\n') {
-                    token.lexeme[strlen(token.lexeme)-1]='\0';
+                    // token.lexeme[strlen(token.lexeme)-1]='\0';
+                    token.lexeme[1]='\0';
                     strcat(token.type, "TK_COMMENT");
+                    token.lineNumber = currentLineNumber-1;
                     return token;
                 }
                 else {
