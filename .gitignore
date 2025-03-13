@@ -1,0 +1,11 @@
+.clang-tidy
+.clang-format
+.idea
+*.o
+*_exe
+.vscode
+output.txt
+lookup_table_usage.c
+*.sh
+code.zip
+lexicalAnalyzer.zip
