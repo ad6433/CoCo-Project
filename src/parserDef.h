@@ -31,24 +31,6 @@ struct grammar
     ProductionRule *P; // Production Rules
 };
 
-typedef enum errorItem
-{
-    SYN,
-    ERR,
-}
-ErrorItem;
-
-typedef struct
-{
-    bool isError;
-
-    union {
-        ProductionRule *rule;
-        ErrorItem error;
-    } item;
-}
-TableEntry;
-
 typedef struct table* Table;
 struct table
 {

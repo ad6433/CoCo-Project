@@ -33,7 +33,20 @@ void insert(AssociativeArray A, char *row, char *column, void *value)
         A->values[index] = L;
     else
         prev->next = L;
-}  
+}
+
+void *get(AssociativeArray A, char *row, char *column)
+{
+    int index = A->hashFunction(strcat(strcat(row, " "), column)) % A->size;
+    LinkedList L = A->values[index];
+    while (L != NULL)
+    {
+        if (strcmp(L->data, column) == 0)
+            return L->data;
+        L = L->next;
+    }
+    return NULL;
+}
 
 int poly_hash(char *s) {
     const int p = 31;

@@ -18,6 +18,8 @@ AssociativeArray newAssociativeArray(int (*hashFunction)(char*), int initialSize
 
 void insert(AssociativeArray A, char *row, char *column, void *value);
 
+void *get(AssociativeArray A, char *row, char *column);
+
 // Implement if needed
 // AssociativeArray rehash(AssociativeArray A);
 
