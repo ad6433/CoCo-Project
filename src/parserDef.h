@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "lexerDef.h"
+#include "associativeArray.h"
 
 typedef struct firstAndFollow* FirstAndFollow;
 struct firstAndFollow
@@ -24,6 +25,7 @@ typedef struct grammar* Grammar;
 struct grammar
 {
     int numTerminals, numNonTerminals, numProductionRules;
+    char startSymbol[100];
     char **T; // Terminals
     char **N; // Non-Terminals
     ProductionRule *P; // Production Rules
@@ -50,7 +52,7 @@ TableEntry;
 typedef struct table* Table;
 struct table
 {
-    TableEntry **entries;
+    AssociativeArray associativeArray;
 };
 
 typedef struct parseTree* ParseTree;
