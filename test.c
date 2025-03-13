@@ -17,8 +17,8 @@ int main()
     twinBuffer B;
     initializeTwinBuffer(&B, fp);
     getStream(&B);
-    twinBufferDebug(&B);
-
+    // twinBufferDebug(&B);
+    
     // FOR TESTING getNextChar() in lexer2
     // char currentChar;
     // while ((!feof(fp)) && ((currentChar=getNextChar(&B))!=EOF)) {
@@ -31,12 +31,12 @@ int main()
     tokenInfo token;
     HashMap lookupTable;
     initializeLookupTable(&lookupTable);
-    int tokenCount = 0;
-    while (1)
-    {
-        printf("Here\n");
-        token = getNextToken(&B, &lookupTable);
-        tokenInfoDebug(&token);
+    int tokenCount=0;
+    while (1) {
+        // printf("Here\n");
+        token=getNextToken(&B, &lookupTable);
+        // tokenInfoDebug(&token);
+        printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
         ++tokenCount;
         // twinBufferDebug(&B);
         if (token.end)
