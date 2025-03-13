@@ -17,7 +17,13 @@
 FILE *getStream(twinBuffer *B);
 void initializeTwinBuffer(twinBuffer *B, FILE* fp);
 char getNextChar(twinBuffer *B);
-tokenInfo getNextToken(twinBuffer *B);
+tokenInfo getNextToken(twinBuffer *B, HashMap* lookupTable);
 void removeComments(char* testcaseFileName, char* cleanFileName);
 void twinBufferDebug(twinBuffer *B);
 void tokenInfoDebug(tokenInfo *token);
+void setNode(Node myNode, char* key, char* value);
+int hash(HashMap mp, char* key);
+void insert(HashMap mp, char* key, char* value);
+char* search(HashMap* mp, char* key);
+void initializeLookupTable(HashMap* lookupTable);
+void retract(twinBuffer *B, int n);

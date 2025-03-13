@@ -11,6 +11,9 @@ int main()
         printf("Error in opening file\n");
         exit(1);
     }
+
+    freopen("output.txt", "w", stdout);
+
     twinBuffer B;
     initializeTwinBuffer(&B, fp);
     getStream(&B);
@@ -26,12 +29,18 @@ int main()
     // }
 
     tokenInfo token;
+    HashMap lookupTable;
+    initializeLookupTable(&lookupTable);
+    int tokenCount=0;
     while (1) {
-        token=getNextToken(&B);
-        if (token.end) break;
+        printf("Here\n");
+        token=getNextToken(&B, &lookupTable);
         tokenInfoDebug(&token);
-        twinBufferDebug(&B);
+        ++tokenCount;
+        // twinBufferDebug(&B);
+        if (token.end) break;
     }
+    printf("tokenCount = %d\n", tokenCount);
 
 //    FOR TESTING getNextChar()
 //    while (1)

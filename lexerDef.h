@@ -35,3 +35,17 @@ typedef struct {
     int lineNumber;
     FILE* fp;
 } twinBuffer;
+
+typedef struct node* Node;
+struct node {
+    char** key;
+    char* value;
+    Node next;
+};
+
+typedef struct hashMap* HashMap;
+struct hashMap {
+    int numberOfElements;
+    int capacity;
+    Node* arr;
+};
