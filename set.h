@@ -12,6 +12,8 @@
 
 #define MAX_SYMBOLS 100
 
+#include <stdbool.h>
+
 typedef struct set Set;
 struct set {
     char* symbols[MAX_SYMBOLS];

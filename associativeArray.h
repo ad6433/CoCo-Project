@@ -25,7 +25,7 @@ struct associativeArray
 
 AssociativeArray newAssociativeArray(int (*hashFunction)(char*), int initialSize);
 
-void insert(AssociativeArray A, char *row, char *column, void *value);
+void insertAA(AssociativeArray A, char *row, char *column, void *value);
 
 void *get(AssociativeArray A, char *row, char *column);
 

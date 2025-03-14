@@ -9,6 +9,7 @@
 
 #include "set.h"
 #include <stdbool.h>
+#include <string.h>
 
 void addToSet(Set* set, char* symbol) {
     for (int i = 0; i < set->count; i++) {

@@ -6,14 +6,26 @@
 #    Shikhar Singh     2022A7PS1170P
 # ONLY FOR LEXICAL ANALYZER TESTING PURPOSES. THIS IS NOT THE FINAL MAKEFILE.
 
-test: test_exe
-	./test_exe
-test_exe: test.o lexer.o
-	gcc -o test_exe test.o lexer.o
-test.o: test.c
-	gcc -c test.c
+# test: test_exe
+# 	./test_exe
+# test_exe: test.o lexer.o
+# 	gcc -o test_exe test.o lexer.o
+# test.o: test.c
+# 	gcc -c test.c
+# lexer.o: lexer.c
+# 	gcc -c lexer.c
+# clean:
+# 	rm *.o
+# 	rm *_exe
+
+driver_exe: driver.c lexer.o parser.o associativeArray.o set.o
+	gcc -o driver_exe driver.c lexer.o parser.o associativeArray.o set.c
 lexer.o: lexer.c
 	gcc -c lexer.c
+parser.o: parser.c
+	gcc -c parser.c
+associativeArray.o: associativeArray.c
+	gcc -c associativeArray.c
 clean:
 	rm *.o
 	rm *_exe

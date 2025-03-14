@@ -10,8 +10,6 @@
 #ifndef LEXERDEF_H
 #define LEXERDEF_H
 
-#endif // LEXERDEF_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,3 +53,5 @@ struct hashMap
     int capacity;
     Node *arr;
 };
+
+#endif

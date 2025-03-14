@@ -30,68 +30,75 @@ int main(int argc, char *argv[])
 
         switch (choice)
         {
-        case 0:
-            printf("EXITING\n");
-            return 0;
-
-        case 1:
-            removeComments(argv[1], "no-comments.txt");
-            printfile(fopen("no-comments.txt", "r"));
-            break;
-
-        case 2:
-            HashMap lookup;
-            initializeLookupTable(lookup);
-            twinBuffer tb;
-            initializeTwinBuffer(&tb, fp);
-            
-            tokenInfo token;
-            while (1)
+            case 0:
             {
-                token = getNextToken(&tb, &lookup);
-                printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
-                if (token.end) break;
+                printf("EXITING\n");
+                return 0;
             }
-            break;
+            case 1:
+            {
+                removeComments(argv[1], "no-comments.txt");
+                printfile(fopen("no-comments.txt", "r"));
+                break;
+            }
+            case 2:
+            {
+                HashMap lookup;
+                initializeLookupTable(&lookup);
+                twinBuffer tb;
+                initializeTwinBuffer(&tb, fp);
+                
+                tokenInfo token;
+                while (1)
+                {
+                    token = getNextToken(&tb, &lookup);
+                    printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
+                    if (token.end) break;
+                }
+                break;
+            }
+            case 3:
+            {
+                Grammar G = readGrammar(fp);
+                FirstAndFollow F = computeFirstAndFollowSets(G);
 
-        case 3:
-            Grammar G = readGrammar(fp);
-            FirstAndFollow F = computeFirstAndFollowSets(G);
+                Table T;
+                createParseTable(F, T, G);
+                ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
+                printParseTree(parseTree, "parsetree.txt");
+                printfile(fopen("parsetree.txt", "r"));
+                break;
+            }
+            case 4:
+            {
+                clock_t start_time, end_time;
 
-            Table T;
-            createParseTable(F, T, G);
-            ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
-            printParseTree(parseTree, "parsetree.txt");
-            printfile(fopen("parsetree.txt", "r"));
-            break;
-        
-        case 4:
-            clock_t start_time, end_time;
+                double total_CPU_time, total_CPU_time_in_seconds;
 
-            double total_CPU_time,      total_CPU_time_in_seconds;
+                start_time = clock();
 
-            start_time = clock();
+                Grammar G = readGrammar(fp);
+                FirstAndFollow F = computeFirstAndFollowSets(G);
 
-            Grammar G = readGrammar(fp);
-            FirstAndFollow F = computeFirstAndFollowSets(G);
+                Table T;
+                createParseTable(F, T, G);
+                ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
 
-            Table T;
-            createParseTable(F, T, G);
-            ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
+                end_time = clock();
 
-            end_time = clock();
+                total_CPU_time = (double) (end_time - start_time);
 
-            total_CPU_time = (double) (end_time - start_time);
+                total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
 
-            total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
+                printf("Total CPU time: %f\n", total_CPU_time);
+                printf("Total CPU time in seconds: %f\n", total_CPU_time_in_seconds);
 
-            printf("Total CPU time: %f\n", total_CPU_time);
-            printf("Total CPU time in seconds: %f\n", total_CPU_time_in_seconds);
-
-            break;
-        
-        default:
-            printf("Enter value between 0 and 4\n");
+                break;
+            }
+            default:
+            {
+                printf("Enter value between 0 and 4\n");
+            }
         }
     }
     while (choice != 0);

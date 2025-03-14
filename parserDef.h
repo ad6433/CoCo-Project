@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include "lexerDef.h"
 #include "associativeArray.h"
+#include "set.h"
 
 typedef struct productionRule* ProductionRule;
 struct productionRule

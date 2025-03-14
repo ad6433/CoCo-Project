@@ -889,7 +889,7 @@ void removeComments(char *testcaseFileName, char *cleanFileName)
     fclose(outputFile);
 }
 
-void printFile(FILE *fp)
+void printfile(FILE *fp)
 {
     char buff[1000];
     while (fgets(buff, sizeof(buff), fp) != NULL)

@@ -10,8 +10,6 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#endif //LEXER_H
-
 #include "lexerDef.h"
 
 FILE *getStream(twinBuffer *B);
@@ -23,7 +21,11 @@ void twinBufferDebug(twinBuffer *B);
 void tokenInfoDebug(tokenInfo *token);
 void setNode(Node myNode, char* key, char* value);
 int hash(HashMap mp, char* key);
-void insert(HashMap mp, char* key, char* value);
+void insert_HM(HashMap mp, char* key, char* value);
 char* search(HashMap* mp, char* key);
 void initializeLookupTable(HashMap* lookupTable);
+void initializeHashMap(HashMap* mp);
 void retract(twinBuffer *B, int n);
+void printfile(FILE *fp);
+
+#endif

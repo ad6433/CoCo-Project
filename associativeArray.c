@@ -21,7 +21,7 @@ AssociativeArray newAssociativeArray(int (*hashFunction)(char*), int initialSize
     return A;
 }
 
-void insert(AssociativeArray A, char *row, char *column, void *value)
+void insertAA(AssociativeArray A, char *row, char *column, void *value)
 {
     int index = A->hashFunction(strcat(strcat(row, " "), column)) % A->size;
     LinkedList L = A->values[index], prev = NULL;

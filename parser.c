@@ -190,9 +190,7 @@ void createParseTable(FirstAndFollow F, Table T, Grammar G)
             
             if (isInSet(first, terminal) || (isInSet(first, "ε") && isInSet(follow, terminal)))
             {
-                char key[200];
-                sprintf(key, "%s %s", nonTerminal, terminal);
-                insert(T->associativeArray, key, (void*)&(G->P[i]));
+                insertAA(T->associativeArray, nonTerminal, terminal, (void*)&(G->P[i]));
             }
         }
     }
