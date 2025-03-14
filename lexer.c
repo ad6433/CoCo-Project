@@ -888,3 +888,10 @@ void removeComments(char *testcaseFileName, char *cleanFileName)
     fclose(inputFile);
     fclose(outputFile);
 }
+
+void printFile(FILE *fp)
+{
+    char buff[1000];
+    while (fgets(buff, sizeof(buff), fp) != NULL)
+        printf("%s", buff);
+}
