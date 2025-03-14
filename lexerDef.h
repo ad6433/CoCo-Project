@@ -16,12 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <ctype.h> // for isspace in remove comments
+#include <ctype.h> // for isspace in removeComments
 
 #define MAX_LEXEME_SIZE 1000
 #define MAX_TOKEN_SIZE 15
 #define MAX_BUFFER_SIZE 10
-#define MAX_LINE_SIZE 1024 // for remove comments
+#define MAX_LINE_SIZE 1024 // for removeComments
 
 typedef struct
 {
