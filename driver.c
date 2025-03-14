@@ -1,8 +1,7 @@
 #include "parser.h"
 #include "lexer.h"
 #include <stdio.h>
-
-
+#include <time.h>
 
 int main(int argc, char *argv[])
 {
@@ -45,8 +44,45 @@ int main(int argc, char *argv[])
                 if (token.end) break;
             }
             break;
+
         case 3:
-            
+            Grammar G = readGrammar(fp);
+            FirstAndFollow F = computeFirstAndFollowSets(G);
+
+            Table T;
+            createParseTable(F, T, G);
+            ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
+            printParseTree(parseTree, "parsetree.txt");
+            printfile(fopen("parsetree.txt", "r"));
+            break;
+        
+        case 4:
+            clock_t start_time, end_time;
+
+            double total_CPU_time,      total_CPU_time_in_seconds;
+
+            start_time = clock();
+
+            Grammar G = readGrammar(fp);
+            FirstAndFollow F = computeFirstAndFollowSets(G);
+
+            Table T;
+            createParseTable(F, T, G);
+            ParseTree parseTree = parseInputSourceCode(argv[1], T, G);
+
+            end_time = clock();
+
+            total_CPU_time = (double) (end_time - start_time);
+
+            total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
+
+            printf("Total CPU time: %f\n", total_CPU_time);
+            printf("Total CPU time in seconds: %f\n", total_CPU_time_in_seconds);
+
+            break;
+        
+        default:
+            printf("Enter value between 0 and 4\n");
         }
     }
     while (choice != 0);
