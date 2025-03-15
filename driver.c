@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
             }
             case 3:
             {
-                Grammar G = readGrammar(fp);
+                Grammar G = readGrammar(fopen("grammar.txt", "r")); 
                 FirstAndFollow F = computeFirstAndFollowSets(G);
 
                 Table T;

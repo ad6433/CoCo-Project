@@ -26,7 +26,7 @@ struct productionRule
 typedef struct grammar* Grammar;
 struct grammar
 {
-    int numTerminals, numNonTerminals, numProductionRules;
+    int numNonTerminals, numTerminals, numProductionRules;
     char startSymbol[100];
     char **T;
     char **N;

@@ -23,5 +23,6 @@ struct set {
 void addToSet(Set* set, char* symbol);
 bool isInSet(Set* set, char* symbol);
 void unionSets(Set* dest, Set* src);
+void printSet(Set* set);
 
 #endif

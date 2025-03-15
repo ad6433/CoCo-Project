@@ -34,144 +34,313 @@ bool isNonTerminal(Grammar G, char* symbol)
 
 Grammar readGrammar(FILE *fp)
 {
+    // printf("reading grammar\n");
+
     Grammar G = (Grammar) malloc(sizeof(struct grammar));
-    fscanf(fp, "%d %d %d %s\n", &G->numTerminals, &G->numNonTerminals, &G->numProductionRules, G->startSymbol);
+    fscanf(fp, "%d %d %d %s\n", &G->numNonTerminals, &G->numTerminals, &G->numProductionRules, G->startSymbol);
+
+    // printf("numNonTerminals: %d\nnumTerminals: %d\nnumProductionRules: %d\nstartSymbol: %s\n", G->numNonTerminals, G->numTerminals, G->numProductionRules, G->startSymbol);
     
     G->T = (char **) malloc(G->numTerminals * sizeof(char *));
     G->N = (char **) malloc(G->numNonTerminals * sizeof(char *));
     G->P = (ProductionRule *) malloc(G->numProductionRules * sizeof(ProductionRule));
     
+    // printf("memory allocated\n");
+
+    fscanf(fp, "\n");
+
+    for (int i = 0; i < G->numNonTerminals; i++)
+    {
+        // printf("attempting to read non terminal\n");
+        G->N[i] = (char *) malloc(100 * sizeof(char));
+        // printf("memory allocated\n");
+        fscanf(fp, "%s\n", G->N[i]);
+        // printf("read: %s\n", G->N[i]);
+    }
+
+    // printf("non terminals read\n");
+    
+    fscanf(fp, "\n");
     for (int i = 0; i < G->numTerminals; i++)
     {
         G->T[i] = (char *) malloc(100 * sizeof(char));
         fscanf(fp, "%s\n", G->T[i]);
     }
-    
-    fscanf(fp, "\n");
-    for (int i = 0; i < G->numNonTerminals; i++)
-    {
-        G->N[i] = (char *) malloc(100 * sizeof(char));
-        fscanf(fp, "%s\n", G->N[i]);
-    }
+
+    // printf("terminals read\n");
     
     fscanf(fp, "\n");
     for (int i = 0; i < G->numProductionRules; i++)
     {
         G->P[i] = (ProductionRule) malloc(sizeof(struct productionRule));
-        G->P[i]->RHS = (char **) malloc(100 * sizeof(char *));
         G->P[i]->LHS = (char *) malloc(100 * sizeof(char));
         fscanf(fp, "%s", G->P[i]->LHS);
-        int j = 0;
-        while (fscanf(fp, "%s", G->P[i]->RHS[j]) != EOF && strcmp(G->P[i]->RHS[j], "\n") != 0) j++;
+        int j;
+        fscanf(fp, "%d", &j);
         G->P[i]->RHSLength = j;
+        G->P[i]->RHS = (char **) malloc(j * sizeof(char *));
+        for (int j = 0; j < G->P[i]->RHSLength; j++)
+        {
+            G->P[i]->RHS[j] = (char *) malloc(100 * sizeof(char));
+        }
+        for (int j = 0; j < G->P[i]->RHSLength; j++)
+        {
+            fscanf(fp, "%s", G->P[i]->RHS[j]);
+        }
+
+        // printf("READ: %s -> ", G->P[i]->LHS);
+        // for (int j = 0; j < G->P[i]->RHSLength; j++)
+        // {
+        //     printf("%s ", G->P[i]->RHS[j]);
+        // }
     }
     
+    // printf("Grammar read successfully\n");
     return G;
-}
-
-Set* computeFirst(Grammar G, char* symbol, Set** firstSets)
-{
-    if (isTerminal(G, symbol))
-    {
-        Set* first = malloc(sizeof(Set));
-        first->count = 0;
-        addToSet(first, symbol);
-        return first;
-    }
-
-    if (firstSets[atoi(symbol)] != NULL)
-    {
-        return firstSets[atoi(symbol)];
-    }
-
-    Set* first = malloc(sizeof(Set));
-    first->count = 0;
-    firstSets[atoi(symbol)] = first;
-
-    for (int i = 0; i < G->numProductionRules; i++)
-    {
-        if (strcmp(G->P[i]->LHS, symbol) == 0)
-        {
-            for (int j = 0; j < G->P[i]->RHSLength; j++)
-            {
-                Set* symbolFirst = computeFirst(G, G->P[i]->RHS[j], firstSets);
-                unionSets(first, symbolFirst);
-                if (!isInSet(symbolFirst, "EPS")) break;
-                if (j == G->P[i]->RHSLength - 1) {
-                    addToSet(first, "EPS");
-                }
-            }
-        }
-    }
-
-    return first;
 }
 
 FirstAndFollow computeFirstAndFollowSets(Grammar G)
 {
+    printf("allocating memory for first and follow sets\n");
+
     FirstAndFollow F = (FirstAndFollow) malloc(sizeof(struct firstAndFollow));
-    F->first = (Set**) malloc(G->numNonTerminals * sizeof(Set*));
-    F->follow = (Set**) malloc(G->numNonTerminals * sizeof(Set*));
+    F->first = (Set **) malloc(G->numNonTerminals * sizeof(Set *));
+    F->follow = (Set **) malloc(G->numNonTerminals * sizeof(Set *));
 
-    // Initialize FIRST sets
-    for (int i = 0; i < G->numNonTerminals; i++)
-        F->first[i] = computeFirst(G, G->N[i], F->first);
-
-    // Initialize FOLLOW sets
     for (int i = 0; i < G->numNonTerminals; i++)
     {
-        F->follow[i] = malloc(sizeof(Set));
+        F->first[i] = (Set *) malloc(sizeof(Set));
+        F->first[i]->count = 0;
+        F->follow[i] = (Set *) malloc(sizeof(Set));
         F->follow[i]->count = 0;
     }
 
-    // Add $ to FOLLOW(S)
-    addToSet(F->follow[0], "$");
+    printf("memory allocated\n");
+    
+    // HARDCODE
+    printf("Computing First and Follow sets (HARDCODED)\n");
+    Set **fi = F->first, **fo = F->follow;
+    
+    // <program>
+    addToSet(fi[0], "TK_MAIN"); addToSet(fi[0], "TK_FUNID");
+    addToSet(fo[0], "$");
 
-    bool changed;
-    do {
-        changed = false;
-        for (int i = 0; i < G->numProductionRules; i++)
-        {
-            char* LHS = G->P[i]->LHS;
-            for (int j = 0; j < G->P[i]->RHSLength; j++)
-            {
-                char* current = G->P[i]->RHS[j];
-                if (isNonTerminal(G, current))
-                {
-                    int currentIndex = atoi(current);
-                    if (j == G->P[i]->RHSLength - 1)
-                    {
-                        int LHSIndex = atoi(LHS);
-                        int oldCount = F->follow[currentIndex]->count;
-                        unionSets(F->follow[currentIndex], F->follow[LHSIndex]);
-                        if (oldCount != F->follow[currentIndex]->count) changed = true;
-                    }
-                    else
-                    {
-                        char* next = G->P[i]->RHS[j+1];
-                        Set* nextFirst = computeFirst(G, next, F->first);
-                        int oldCount = F->follow[currentIndex]->count;
-                        for (int k = 0; k < nextFirst->count; k++)
-                        {
-                            if (strcmp(nextFirst->symbols[k], "EPS") != 0)
-                                addToSet(F->follow[currentIndex], nextFirst->symbols[k]);
-                        }
-                        if (oldCount != F->follow[currentIndex]->count)
-                            changed = true;
-                        if (isInSet(nextFirst, "EPS"))
-                        {
-                            int LHSIndex = atoi(LHS);
-                            oldCount = F->follow[currentIndex]->count;
-                            unionSets(F->follow[currentIndex], F->follow[LHSIndex]);
-                            if (oldCount != F->follow[currentIndex]->count) changed = true;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    while (changed); // Terminate when an iteration goes without any changes
+    // <mainFunction>
+    addToSet(fi[1], "TK_MAIN");
+    addToSet(fo[1], "$");
 
+    // <otherFunctions>
+    addToSet(fi[2], "TK_FUNID"); addToSet(fi[2], "EPS");
+    addToSet(fo[2], "TK_MAIN");
+
+    // <function>
+    addToSet(fi[3], "TK_FUNID");
+    addToSet(fo[3], "TK_MAIN"); addToSet(fo[3], "TK_FUNID");
+
+    // <input_par>
+    addToSet(fi[4], "TK_INPUT");
+    addToSet(fo[4], "TK_OUTPUT"); addToSet(fo[4], "TK_SEM");
+
+    // <output_par>
+    addToSet(fi[5], "TK_OUTPUT"); addToSet(fi[5], "EPS");
+    addToSet(fo[5], "TK_SEM");
+
+    // <parameter_list>
+    addToSet(fi[6], "TK_INT"); addToSet(fi[6], "TK_REAL"); addToSet(fi[6], "TK_RECORD"); addToSet(fi[6], "TK_UNION"); addToSet(fi[6], "TK_RUID");
+    addToSet(fo[6], "TK_SQR");
+
+    // <dataType>
+    addToSet(fi[7], "TK_INT"); addToSet(fi[7], "TK_REAL"); addToSet(fi[7], "TK_RECORD"); addToSet(fi[7], "TK_UNION");
+    addToSet(fi[7], "TK_RUID");
+    addToSet(fo[7], "TK_ID"); addToSet(fo[7], "TK_COLON:");
+
+    // <primitiveDatatype>
+    addToSet(fi[8], "TK_INT"); addToSet(fi[8], "TK_REAL");
+    addToSet(fo[8], "TK_ID"); addToSet(fo[8], "TK_COLON:");
+    // FOLLOW OF FIELD TYPE
+
+    // <constructedDatatype>
+    addToSet(fi[9], "TK_RECORD"); addToSet(fi[9], "TK_UNION"); addToSet(fi[9], "TK_RUID");
+    addToSet(fo[9], "TK_ID"); addToSet(fo[9], "TK_COLON:");
+    // FOLLOW OF FIELD TYPE
+
+    // <remaining_list>
+    addToSet(fi[10], "TK_COMMA"); addToSet(fi[10], "EPS");
+    addToSet(fo[10], "TK_SQR");
+
+    // <stmts>
+    addToSet(fi[11], "TK_RECORD"); addToSet(fi[11], "TK_UNION"); addToSet(fi[11], "TK_DEFINETYPE"); addToSet(fi[11], "TK_TYPE"); addToSet(fi[11], "TK_ID"); addToSet(fi[11], "TK_READ"); addToSet(fi[11], "TK_WRITE"); addToSet(fi[11], "TK_IF"); addToSet(fi[11], "TK_WHILE"); addToSet(fi[11], "TK_SQL"); addToSet(fi[11], "TK_CALL"); addToSet(fi[11], "TK_RETURN");
+    addToSet(fo[11], "TK_END");
+
+    // <typeDefinitions>
+    addToSet(fi[12], "TK_RECORD"); addToSet(fi[12], "TK_UNION"); addToSet(fi[12], "TK_DEFINETYPE"); addToSet(fi[12], "EPS");
+    addToSet(fo[12], "TK_TYPE"); addToSet(fo[12], "TK_ID"); addToSet(fo[12], "TK_READ"); addToSet(fo[12], "TK_WRITE"); addToSet(fo[12], "TK_IF"); addToSet(fo[12], "TK_WHILE"); addToSet(fo[12], "TK_SQL"); addToSet(fo[12], "TK_CALL"); addToSet(fo[12], "TK_RETURN");
+
+    // <actualOrRedefined>
+    addToSet(fi[13], "TK_RECORD"); addToSet(fi[13], "TK_UNION"); addToSet(fi[13], "TK_DEFINETYPE");
+    addToSet(fo[13], "TK_RECORD"); addToSet(fo[13], "TK_UNION"); addToSet(fo[13], "TK_DEFINETYPE"); addToSet(fo[13], "TK_TYPE"); addToSet(fo[13], "TK_ID"); addToSet(fo[13], "TK_READ"); addToSet(fo[13], "TK_WRITE"); addToSet(fo[13], "TK_IF"); addToSet(fo[13], "TK_WHILE"); addToSet(fo[13], "TK_SQL"); addToSet(fo[13], "TK_CALL"); addToSet(fo[13], "TK_RETURN");
+
+    // <typeDefinition>
+    addToSet(fi[14], "TK_UNION"); addToSet(fi[14], "TK_RECORD");
+    addToSet(fo[14], "TK_RECORD"); addToSet(fo[14], "TK_UNION"); addToSet(fo[14], "TK_DEFINETYPE"); addToSet(fo[14], "TK_TYPE"); addToSet(fo[14], "TK_ID"); addToSet(fo[14], "TK_READ"); addToSet(fo[14], "TK_WRITE"); addToSet(fo[14], "TK_IF"); addToSet(fo[14], "TK_WHILE"); addToSet(fo[14], "TK_SQL"); addToSet(fo[14], "TK_CALL"); addToSet(fo[14], "TK_RETURN");
+
+    // <fieldDefinitions>
+    addToSet(fi[15], "TK_TYPE");
+    addToSet(fo[15], "TK_ENDRECORD"); addToSet(fo[15], "TK_ENDUNION");
+
+    // <fieldDefinition>
+    addToSet(fi[16], "TK_TYPE");
+    addToSet(fo[16], "TK_TYPE");
+    addToSet(fo[16], "TK_ENDRECORD"); addToSet(fo[16], "TK_ENDUNION");
+
+    // <fieldType>
+    addToSet(fi[17], "TK_RECORD"); addToSet(fi[17], "TK_UNION"); addToSet(fi[17], "TK_RUID"); addToSet(fi[17], "TK_INT"); addToSet(fi[17], "TK_REAL");
+    addToSet(fo[17], "TK_COLON");
+
+    // <moreFields>
+    addToSet(fi[18], "TK_TYPE"); addToSet(fi[18], "EPS"); 
+    addToSet(fo[18], "TK_ENDRECORD"); addToSet(fo[18], "TK_ENDUNION");
+
+    // <declarations>
+    addToSet(fi[19], "TK_TYPE"); addToSet(fi[19], "EPS");
+    addToSet(fo[19], "TK_ID"); addToSet(fo[19], "TK_READ"); addToSet(fo[19], "TK_WRITE"); addToSet(fo[19], "TK_IF"); addToSet(fo[19], "TK_WHILE"); addToSet(fo[19], "TK_SQL"); addToSet(fo[19], "TK_CALL");
+    addToSet(fo[19], "TK_RETURN");
+
+    // <declaration>
+    addToSet(fi[20], "TK_TYPE");
+    addToSet(fo[20], "TK_TYPE");addToSet(fo[20], "TK_ID"); addToSet(fo[20], "TK_READ"); addToSet(fo[20], "TK_WRITE"); addToSet(fo[20], "TK_IF"); addToSet(fo[20], "TK_WHILE"); addToSet(fo[20], "TK_SQL"); addToSet(fo[20], "TK_CALL");
+    addToSet(fo[20], "TK_RETURN");
+
+    // <global_or_not>
+    addToSet(fi[21], "EPS"); addToSet(fi[21], "TK_COLON:"); 
+    addToSet(fo[21], "TK_SEM");
+
+    // <otherStmts>
+    addToSet(fi[22], "TK_ID"); addToSet(fi[22], "TK_READ"); addToSet(fi[22], "TK_WRITE"); addToSet(fi[22], "TK_IF"); addToSet(fi[22], "TK_WHILE"); addToSet(fi[22], "TK_SQL"); addToSet(fi[22], "TK_CALL"); addToSet(fi[22], "EPS");
+    addToSet(fo[22], "TK_RETURN"); addToSet(fo[22], "TK_ENDWHILE"); addToSet(fo[22], "TK_ENDIF"); addToSet(fo[22], "TK_ELSE");
+
+    // <stmt>
+    addToSet(fi[23], "TK_ID"); addToSet(fi[23], "TK_READ"); addToSet(fi[23], "TK_WRITE"); addToSet(fi[23], "TK_IF"); addToSet(fi[23], "TK_WHILE"); addToSet(fi[23], "TK_SQL"); addToSet(fi[23], "TK_CALL");
+    addToSet(fo[23], "TK_ID"); addToSet(fo[23], "TK_READ"); addToSet(fo[23], "TK_WRITE"); addToSet(fo[23], "TK_IF"); addToSet(fo[23], "TK_WHILE"); addToSet(fo[23], "TK_SQL"); addToSet(fo[23], "TK_CALL");addToSet(fo[23], "TK_RETURN"); addToSet(fo[23], "TK_ENDWHILE"); addToSet(fo[23], "TK_ENDIF"); addToSet(fo[23], "TK_ELSE");
+
+    // <assignmentStmt>
+    addToSet(fi[24], "TK_ID");
+    addToSet(fo[24], "TK_ID"); addToSet(fo[24], "TK_READ"); addToSet(fo[24], "TK_WRITE"); addToSet(fo[24], "TK_IF"); addToSet(fo[24], "TK_WHILE"); addToSet(fo[24], "TK_SQL"); addToSet(fo[24], "TK_CALL");addToSet(fo[24], "TK_RETURN"); addToSet(fo[24], "TK_ENDWHILE"); addToSet(fo[24], "TK_ENDIF"); addToSet(fo[24], "TK_ELSE");
+
+    // <singleOrRecId>
+    addToSet(fi[25], "TK_ID");
+    addToSet(fo[25], "TK_ASSIGNOP");
+
+    // <option_single_constructed>
+    addToSet(fi[26], "TK_DOT"); addToSet(fi[26], "EPS");
+    addToSet(fo[26], "TK_ASSIGNOP");
+
+    // <oneExpansion>
+    addToSet(fi[27], "TK_DOT");
+    addToSet(fo[27], "TK_DOT"); addToSet(fo[27], "TK_ASSIGNOP");
+
+    // <moreExpansions>
+    addToSet(fi[28], "EPS"); addToSet(fi[28], "TK_DOT");
+    addToSet(fo[28], "TK_ASSIGNOP");
+
+    // <funCallStmt>
+    addToSet(fi[29], "TK_SQL"); addToSet(fi[29], "TK_CALL");
+    addToSet(fo[29], "TK_ID"); addToSet(fo[29], "TK_READ"); addToSet(fo[29], "TK_WRITE"); addToSet(fo[29], "TK_IF"); addToSet(fo[29], "TK_WHILE"); addToSet(fo[29], "TK_SQL"); addToSet(fo[29], "TK_CALL");addToSet(fo[29], "TK_RETURN"); addToSet(fo[29], "TK_ENDWHILE"); addToSet(fo[29], "TK_ENDIF"); addToSet(fo[29], "TK_ELSE");
+
+    // <outputParameters>
+    addToSet(fi[30], "TK_SQL"); addToSet(fi[30], "EPS");
+    addToSet(fo[30], "TK_CALL");
+
+    // <inputParameters>
+    addToSet(fi[31], "TK_SQL");
+    addToSet(fo[31], "TK_SEM");
+
+    // <iterativeStmt>
+    addToSet(fi[32], "TK_WHILE");
+    addToSet(fo[32], "TK_ID"); addToSet(fo[32], "TK_READ"); addToSet(fo[32], "TK_WRITE"); addToSet(fo[32], "TK_IF"); addToSet(fo[32], "TK_WHILE"); addToSet(fo[32], "TK_SQL"); addToSet(fo[32], "TK_CALL");addToSet(fo[32], "TK_RETURN"); addToSet(fo[32], "TK_ENDWHILE"); addToSet(fo[32], "TK_ENDIF"); addToSet(fo[32], "TK_ELSE");
+
+    // <conditionalStmt>
+    addToSet(fi[33], "TK_IF");
+    addToSet(fo[33], "TK_ID"); addToSet(fo[33], "TK_READ"); addToSet(fo[33], "TK_WRITE"); addToSet(fo[33], "TK_IF"); addToSet(fo[33], "TK_WHILE"); addToSet(fo[33], "TK_SQL"); addToSet(fo[33], "TK_CALL");addToSet(fo[33], "TK_RETURN"); addToSet(fo[33], "TK_ENDWHILE"); addToSet(fo[33], "TK_ENDIF"); addToSet(fo[33], "TK_ELSE");
+
+    // <elsePart>
+    addToSet(fi[34], "TK_ELSE"); addToSet(fi[34], "TK_ENDIF");
+    addToSet(fo[34], "TK_RETURN"); addToSet(fo[34], "TK_ENDWHILE"); addToSet(fo[34], "TK_ENDIF"); addToSet(fo[34], "TK_ELSE");
+
+    // <ioStmt>
+    addToSet(fi[35], "TK_READ"); addToSet(fi[35], "TK_WRITE");
+    addToSet(fo[35], "TK_ID"); addToSet(fo[35], "TK_READ"); addToSet(fo[35], "TK_WRITE"); addToSet(fo[35], "TK_IF"); addToSet(fo[35], "TK_WHILE"); addToSet(fo[35], "TK_SQL"); addToSet(fo[35], "TK_CALL");addToSet(fo[35], "TK_RETURN"); addToSet(fo[35], "TK_ENDWHILE"); addToSet(fo[35], "TK_ENDIF"); addToSet(fo[35], "TK_ELSE");
+
+    // <arithmeticExpression>
+    addToSet(fi[36], "TK_NUM"); addToSet(fi[36], "TK_RNUM"); addToSet(fi[36], "TK_ID"); addToSet(fi[36], "TK_OP");
+    addToSet(fo[36], "TK_CL"); addToSet(fo[36], "TK_SEM");
+
+    // <arithmeticExpressionPrime>
+    addToSet(fi[37], "EPS"); addToSet(fi[37], "TK_PLUS"); addToSet(fi[37], "TK_MINUS");
+    addToSet(fo[37], "TK_CL"); addToSet(fo[37], "TK_SEM");
+
+    // <lowPrecedenceOperator>
+    addToSet(fi[38], "TK_PLUS"); addToSet(fi[38], "TK_MINUS");
+    addToSet(fo[38], "TK_NUM"); addToSet(fo[38], "TK_RNUM"); addToSet(fo[38], "TK_ID"); addToSet(fo[38], "TK_OP");
+
+    // <highPrecedenceOperator>
+    addToSet(fi[39], "TK_MUL"); addToSet(fi[39], "TK_DIV");
+    addToSet(fo[39], "TK_NUM"); addToSet(fo[39], "TK_RNUM"); addToSet(fo[39], "TK_ID"); addToSet(fo[39], "TK_OP");
+
+    // <term>
+    addToSet(fi[40], "TK_NUM"); addToSet(fi[40], "TK_RNUM"); addToSet(fi[40], "TK_ID"); addToSet(fi[40], "TK_OP");addToSet(fo[40], "TK_PLUS"); addToSet(fo[40], "TK_MINUS"); addToSet(fo[40], "TK_CL"); addToSet(fo[40], "TK_SEM");
+
+    // <termPrime>
+    addToSet(fi[41], "TK_MUL"); addToSet(fi[41], "TK_DIV"); addToSet(fi[41], "EPS");
+    addToSet(fo[41], "TK_PLUS"); addToSet(fo[41], "TK_MINUS"); addToSet(fo[41], "TK_CL"); addToSet(fo[41], "TK_SEM");
+
+    // <factor>
+    addToSet(fi[42], "TK_NUM"); addToSet(fi[42], "TK_RNUM"); addToSet(fi[42], "TK_ID"); addToSet(fi[42], "TK_OP");
+    addToSet(fo[42], "TK_MUL"); addToSet(fo[42], "TK_DIV");addToSet(fo[42], "TK_PLUS"); addToSet(fo[42], "TK_MINUS"); addToSet(fo[42], "TK_CL"); addToSet(fo[42], "TK_SEM");
+
+    // <booleanExpression>
+    addToSet(fi[43], "TK_OP"); addToSet(fi[43], "TK_NOT"); addToSet(fi[43], "TK_NUM"); addToSet(fi[43], "TK_RNUM"); addToSet(fi[43], "TK_ID");
+    addToSet(fo[43], "TK_CL");
+
+    // <var>
+    addToSet(fi[44], "TK_NUM"); addToSet(fi[44], "TK_RNUM"); addToSet(fi[44], "TK_ID");
+    addToSet(fo[44], "TK_CL");addToSet(fo[44], "TK_MUL"); addToSet(fo[44], "TK_DIV");addToSet(fo[44], "TK_PLUS"); addToSet(fo[44], "TK_MINUS"); addToSet(fo[44], "TK_SEM");addToSet(fo[44], "TK_LT"); addToSet(fo[44], "TK_LE"); addToSet(fo[44], "TK_GT"); addToSet(fo[44], "TK_GE"); addToSet(fo[44], "TK_EQ"); addToSet(fo[44], "TK_NE");
+
+    // <logicalOp>
+    addToSet(fi[45], "TK_AND"); addToSet(fi[45], "TK_OR");
+    addToSet(fo[45], "TK_OP"); 
+
+    // <relationalOp>
+    addToSet(fi[46], "TK_LT"); addToSet(fi[46], "TK_LE"); addToSet(fi[46], "TK_GT"); addToSet(fi[46], "TK_GE"); addToSet(fi[46], "TK_EQ"); addToSet(fi[46], "TK_NE");
+    addToSet(fo[46], "TK_NUM"); addToSet(fo[46], "TK_RNUM"); addToSet(fo[46], "TK_ID");
+
+    // <returnStmt>
+    addToSet(fi[47], "TK_RETURN");
+    addToSet(fo[47], "TK_END");
+
+    // <optionalReturn>
+    addToSet(fi[48], "EPS"); addToSet(fi[48], "TK_SQL");
+    addToSet(fo[48], "TK_SEM");
+
+    // <idList>
+    addToSet(fi[49], "TK_ID");
+    addToSet(fo[49], "TK_SQR");
+
+    // <more_ids>
+    addToSet(fi[50], "TK_COMMA"); addToSet(fi[50], "EPS");
+    addToSet(fo[50], "TK_SQR");
+
+    // <definetypestmt>
+    addToSet(fi[51], "TK_DEFINETYPE");
+    addToSet(fo[51], "TK_RECORD"); addToSet(fo[51], "TK_UNION"); addToSet(fo[51], "TK_DEFINETYPE"); addToSet(fo[51], "TK_TYPE"); addToSet(fo[51], "TK_ID"); addToSet(fo[51], "TK_READ"); addToSet(fo[51], "TK_WRITE"); addToSet(fo[51], "TK_IF"); addToSet(fo[51], "TK_WHILE"); addToSet(fo[51], "TK_SQL"); addToSet(fo[51], "TK_CALL"); addToSet(fo[51], "TK_RETURN");
+
+    // <A>
+    addToSet(fi[52], "TK_RECORD"); addToSet(fi[52], "TK_UNION");
+    addToSet(fo[52], "TK_RUID");
+
+    // HARDCODE FINISH
+
+    printf("First and Follow sets computed\n");
     return F;
 }
 

@@ -10,6 +10,7 @@
 typedef struct linkedList* LinkedList;
 struct linkedList
 {
+    char *key;
     void *data;
     LinkedList next;
 };

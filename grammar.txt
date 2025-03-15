@@ -1,4 +1,4 @@
-53 57 93 <program>
+53 57 96 <program>
 
 <program>
 <mainFunction>
@@ -112,96 +112,99 @@ TK_GT
 TK_GE
 TK_NE
 
-<program> -> <otherFunctions> <mainFunction>
-<mainFunction> -> TK_MAIN <stmts> TK_END
-<otherFunctions> -> <function> <otherFunctions>
-<otherFunctions> -> EPS
-<function> -> TK_FUNID <input_par> <output_par> TK_SEM <stmts> TK_END
-<input_par> -> TK_INPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR
-<output_par> -> TK_OUTPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR
-<output_par> -> EPS
-<parameter_list> -> <dataType> TK_ID <remaining_list>
-<dataType> -> <primitiveDatatype>
-<dataType> -> <constructedDatatype>
-<primitiveDatatype> -> TK_INT
-<primitiveDatatype> -> TK_REAL
-<constructedDatatype> -> TK_RECORD TK_RUID
-<constructedDatatype> -> TK_UNION TK_RUID
-<constructedDatatype> -> TK_RUID
-<remaining_list> -> TK_COMMA <parameter_list>
-<remaining_list> -> EPS
-<stmts> -> <typeDefinitions> <declarations> <otherStmts> <returnStmt>
-<typeDefinitions> -> <actualOrRedefined> <typeDefinitions>
-<typeDefinitions> -> EPS
-<actualOrRedefined> -> <typeDefinition>
-<actualOrRedefined> -> <definetypestmt>
-<typeDefinition> -> TK_RECORD TK_RUID <fieldDefinitions> TK_ENDRECORD
-<typeDefinition> -> TK_UNION TK_RUID <fieldDefinitions> TK_ENDUNION
-<fieldDefinitions> -> <fieldDefinition> <fieldDefinition> <moreFields>
-<fieldDefinition> -> TK_TYPE <fieldType> TK_COLON TK_FIELDID TK_SEM
-<fieldType> -> <primitiveDatatype>
-<fieldType> -> <constructedDatatype>
-<moreFields> -> <fieldDefinition> <moreFields>
-<moreFields -> EPS
-<declarations> -> <declaration> <declarations>
-<declarations> -> EPS
-<declaration> -> TK_TYPE <dataType> TK_COLON TK_ID <global_or_not> TK_SEM
-<global_or_not> -> TK_COLON TK_GLOBAL
-<global_or_not> -> EPS
-<otherStmts> -> <stmt> <otherStmts>
-<otherStmts> -> EPS
-<stmt> -> <assignmentStmt>
-<stmt> -> <iterativeStmt>
-<stmt> -> <conditionalStmt>
-<stmt> -> <ioStmt>
-<stmt> -> <funCallStmt>
-<assignmentStmt> -> <singleOrRecId> TK_ASSIGNOP <arithmeticExpression> TK_SEM
-<oneExpansion> -> TK_DOT TK_FIELDID
-<moreExpansions> -> <oneExpansion> <moreExpansions>
-<moreExpansions> -> EPS
-<singleOrRecId> -> TK_ID
-<singleOrRecId> -> TK_ID <option_single_constructed>
-<option_single_constructed> -> <oneExpansion> <moreExpansions>
-<option_single_constructed -> EPS
-<funCallStmt> -> <outputParameters> TK_CALL TK_FUNID TK_WITH TK_PARAMETERS <inputParameters> TK_SEM
-<outputParameters> -> TK_SQL <idList> TK_SQR TK_ASSIGNOP
-<outputParameters> -> EPS
-<inputParameters> -> TK_SQL <idList> TK_SQR
-<iterativeStmt> -> TK_WHILE TK_OP <booleanExpression> TK_CL <stmt> <otherStmts> TK_ENDWHILE
-<conditionalStmt> -> TK_IF TK_OP <booleanExpression> TK_CL TK_THEN <stmt> <otherStmts> <elsePart>
-<elsePart> -> TK_ELSE <stmt> <otherStmts> TK_ENDIF
-<elsePart> -> TK_ENDIF
-<ioStmt> -> TK_READ TK_OP <var> TK_CL TK_SEM
-<ioStmt> -> TK_WRITE TK_OP <var> TK_CL TK_SEM
-<arithmeticExpression> -> <term> <arithmeticExpressionPrime>
-<arithmeticExpressionPrime> -> <lowPrecedenceOperator> <term> <arithmeticExpressionPrime>
-<arithmeticExpressionPrime -> EPS
-<term> -> <factor> <termPrime>
-<termPrime> -> <highPrecedenceOperator> <factor> <termPrime>
-<termPrime> -> EPS
-<factor> -> TK_OP <arithmeticExpression> TK_CL
-<factor> -> <var>
-<highPrecedenceOperator> -> TK_MUL
-<highPrecedenceOperator> -> TK_DIV
-<lowPrecedenceOperator> -> TK_PLUS
-<lowPrecedenceOperator -> TK_MINUS
-<booleanExpression> -> TK_OP <booleanExpression> TK_CL <logicalOp> TK_OP <booleanExpression> TK_CL
-<booleanExpression> -> <var> <relationalOp> <var>
-<booleanExpression> -> TK_NOT TK_OP <booleanExpression TK_CL
-<var> -> <singleOrRecId>
-<var> -> TK_NUM
-<var> -> TK_RNUM
-<logicalOp> -> TK_AND
-<logicalOp> -> TK_OR
-<relationalOp> -> TK_LT
-<relationalOp> -> TK_LE
-<relationalOp> -> TK_GT
-<relationalOp> -> TK_GE
-<relationalOp> -> TK_EQ
-<relationalOp> -> TK_NE
-<returnStmt> -> TK_RETURN <optionalReturn> TK_SEM
-<optionalReturn> -> TK_SQL <idList> TK_SQR
-<optionalReturn> -> EPS
-<idList> -> TK_ID <more_ids>
-<more_ids> -> TK_COMMA <idList>
-<more_ids> -> EPS
+<program> 2 <otherFunctions> <mainFunction>
+<mainFunction> 3 TK_MAIN <stmts> TK_END
+<otherFunctions> 2 <function> <otherFunctions>
+<otherFunctions> 1 EPS
+<function> 6 TK_FUNID <input_par> <output_par> TK_SEM <stmts> TK_END
+<input_par> 6 TK_INPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR
+<output_par> 6 TK_OUTPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR
+<output_par> 1 EPS
+<parameter_list> 3 <dataType> TK_ID <remaining_list>
+<dataType> 1 <primitiveDatatype>
+<dataType> 1 <constructedDatatype>
+<primitiveDatatype> 1 TK_INT
+<primitiveDatatype> 1 TK_REAL
+<constructedDatatype> 2 TK_RECORD TK_RUID
+<constructedDatatype> 2 TK_UNION TK_RUID
+<constructedDatatype> 1 TK_RUID
+<remaining_list> 2 TK_COMMA <parameter_list>
+<remaining_list> 1 EPS
+<stmts> 4 <typeDefinitions> <declarations> <otherStmts> <returnStmt>
+<typeDefinitions> 2 <actualOrRedefined> <typeDefinitions>
+<typeDefinitions> 1 EPS
+<actualOrRedefined> 1 <typeDefinition>
+<actualOrRedefined> 1 <definetypestmt>
+<typeDefinition> 4 TK_RECORD TK_RUID <fieldDefinitions> TK_ENDRECORD
+<typeDefinition> 4 TK_UNION TK_RUID <fieldDefinitions> TK_ENDUNION
+<fieldDefinitions> 3 <fieldDefinition> <fieldDefinition> <moreFields>
+<fieldDefinition> 5 TK_TYPE <fieldType> TK_COLON TK_FIELDID TK_SEM
+<fieldType> 1 <primitiveDatatype>
+<fieldType> 1 <constructedDatatype>
+<moreFields> 2 <fieldDefinition> <moreFields>
+<moreFields> 1 EPS
+<declarations> 2 <declaration> <declarations>
+<declarations> 1 EPS
+<declaration> 6 TK_TYPE <dataType> TK_COLON TK_ID <global_or_not> TK_SEM
+<global_or_not> 2 TK_COLON TK_GLOBAL
+<global_or_not> 1 EPS
+<otherStmts> 2 <stmt> <otherStmts>
+<otherStmts> 1 EPS
+<stmt> 1 <assignmentStmt>
+<stmt> 1 <iterativeStmt>
+<stmt> 1 <conditionalStmt>
+<stmt> 1 <ioStmt>
+<stmt> 1 <funCallStmt>
+<assignmentStmt> 4 <singleOrRecId> TK_ASSIGNOP <arithmeticExpression> TK_SEM
+<oneExpansion> 2 TK_DOT TK_FIELDID
+<moreExpansions> 2 <oneExpansion> <moreExpansions>
+<moreExpansions> 1 EPS
+<singleOrRecId> 1 TK_ID
+<singleOrRecId> 2 TK_ID <option_single_constructed>
+<option_single_constructed> 2 <oneExpansion> <moreExpansions>
+<option_single_constructed> 1 EPS
+<funCallStmt> 7 <outputParameters> TK_CALL TK_FUNID TK_WITH TK_PARAMETERS <inputParameters> TK_SEM
+<outputParameters> 4 TK_SQL <idList> TK_SQR TK_ASSIGNOP
+<outputParameters> 1 EPS
+<inputParameters> 3 TK_SQL <idList> TK_SQR
+<iterativeStmt> 7 TK_WHILE TK_OP <booleanExpression> TK_CL <stmt> <otherStmts> TK_ENDWHILE
+<conditionalStmt> 8 TK_IF TK_OP <booleanExpression> TK_CL TK_THEN <stmt> <otherStmts> <elsePart>
+<elsePart> 4 TK_ELSE <stmt> <otherStmts> TK_ENDIF
+<elsePart> 1 TK_ENDIF
+<ioStmt> 5 TK_READ TK_OP <var> TK_CL TK_SEM
+<ioStmt> 5 TK_WRITE TK_OP <var> TK_CL TK_SEM
+<arithmeticExpression> 2 <term> <arithmeticExpressionPrime>
+<arithmeticExpressionPrime> 3 <lowPrecedenceOperator> <term> <arithmeticExpressionPrime>
+<arithmeticExpressionPrime> 1 EPS
+<term> 2 <factor> <termPrime>
+<termPrime> 3 <highPrecedenceOperator> <factor> <termPrime>
+<termPrime> 1 EPS
+<factor> 3 TK_OP <arithmeticExpression> TK_CL
+<factor> 1 <var>
+<highPrecedenceOperator> 1 TK_MUL
+<highPrecedenceOperator> 1 TK_DIV
+<lowPrecedenceOperator> 1 TK_PLUS
+<lowPrecedenceOperator> 1 TK_MINUS
+<booleanExpression> 7 TK_OP <booleanExpression> TK_CL <logicalOp> TK_OP <booleanExpression> TK_CL
+<booleanExpression> 3 <var> <relationalOp> <var>
+<booleanExpression> 4 TK_NOT TK_OP <booleanExpression> TK_CL
+<var> 1 <singleOrRecId>
+<var> 1 TK_NUM
+<var> 1 TK_RNUM
+<logicalOp> 1 TK_AND
+<logicalOp> 1 TK_OR
+<relationalOp> 1 TK_LT
+<relationalOp> 1 TK_LE
+<relationalOp> 1 TK_GT
+<relationalOp> 1 TK_GE
+<relationalOp> 1 TK_EQ
+<relationalOp> 1 TK_NE
+<returnStmt> 3 TK_RETURN <optionalReturn> TK_SEM
+<optionalReturn> 3 TK_SQL <idList> TK_SQR
+<optionalReturn> 1 EPS
+<idList> 2 TK_ID <more_ids>
+<more_ids> 2 TK_COMMA <idList>
+<more_ids> 1 EPS
+<definetypestmt> 5 TK_DEFINETYPE <A> TK_RUID TK_AS TK_RUID
+<A> 1 TK_RECORD
+<A> 1 TK_UNION

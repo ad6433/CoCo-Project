@@ -10,6 +10,7 @@
 #include "set.h"
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 void addToSet(Set* set, char* symbol) {
     for (int i = 0; i < set->count; i++) {
@@ -29,4 +30,11 @@ void unionSets(Set* dest, Set* src) {
     for (int i = 0; i < src->count; i++) {
         addToSet(dest, src->symbols[i]);
     }
+}
+
+void printSet(Set* set) {
+    for (int i = 0; i < set->count; i++) {
+        printf("%s ", set->symbols[i]);
+    }
+    printf("\n");
 }

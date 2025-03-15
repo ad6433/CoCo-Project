@@ -27,7 +27,7 @@ void insertAA(AssociativeArray A, char *row, char *column, void *value)
     LinkedList L = A->values[index], prev = NULL;
     while (L != NULL)
     {
-        if (strcmp(L->data, column) == 0)
+        if (strcmp(L->key, row) == 0)
         {
             L->data = value;
             return;
@@ -37,6 +37,7 @@ void insertAA(AssociativeArray A, char *row, char *column, void *value)
     }
     L = (LinkedList) malloc(sizeof(struct linkedList));
     L->data = value;
+    L->key = strcpy((char *) malloc(50 * sizeof(char)), row);
     L->next = NULL;
     if (prev == NULL)
         A->values[index] = L;

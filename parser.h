@@ -15,7 +15,7 @@
 
 Grammar readGrammar(FILE *fp);
 /* FORMAT:
-    numTerminals numNonTerminals numProductionRules startSymbol \n
+    numNonTerminals numTerminals numProductionRules startSymbol \n
     \n
     Terminals: (str \n)*
     \n
