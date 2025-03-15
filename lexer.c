@@ -891,7 +891,8 @@ void removeComments(char *testcaseFileName, char *cleanFileName)
 
 void printfile(FILE *fp)
 {
-    char buff[1000];
-    while (fgets(buff, sizeof(buff), fp) != NULL)
-        printf("%s", buff);
+    printf("Printing file\n");
+    char buf[1000];
+    while (fgets(buf, 1000, fp) != NULL)
+        printf("%s", buf);
 }

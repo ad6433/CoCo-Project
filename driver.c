@@ -47,13 +47,14 @@ int main(int argc, char *argv[])
                 initializeLookupTable(&lookup);
                 twinBuffer tb;
                 initializeTwinBuffer(&tb, fp);
-                
+                getStream(&tb);
+
                 tokenInfo token;
                 while (1)
                 {
                     token = getNextToken(&tb, &lookup);
-                    printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
                     if (token.end) break;
+                    printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
                 }
                 break;
             }

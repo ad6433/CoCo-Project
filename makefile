@@ -4,7 +4,8 @@
 #    Samarth           2022A7PS0096P
 #    Shashank Jha      2022A7PS1186P
 #    Shikhar Singh     2022A7PS1170P
-# ONLY FOR LEXICAL ANALYZER TESTING PURPOSES. THIS IS NOT THE FINAL MAKEFILE.
+
+make CC=gcc-11.4.0
 
 # test: test_exe
 # 	./test_exe
