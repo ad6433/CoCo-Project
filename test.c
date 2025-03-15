@@ -5,7 +5,7 @@
 int main()
 {
     FILE *fp;
-    fp = fopen("test_t2.txt", "r");
+    fp = fopen("test_ct1.txt", "r");
     if (fp == NULL)
     {
         printf("Error in opening file\n");
@@ -26,7 +26,8 @@ int main()
         // printf("Here\n");
         token=getNextToken(&B, &lookupTable);
         // tokenInfoDebug(&token);
-        printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
+        if (strcmp(token.type, "TK_ERROR"))
+            printf("Line no. %d\t Lexeme %s\t \tToken %s\n", token.lineNumber, token.lexeme, token.type);
         ++tokenCount;
         // twinBufferDebug(&B);
         if (token.end)

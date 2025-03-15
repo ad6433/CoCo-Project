@@ -55,7 +55,9 @@ int hash(HashMap mp, char *key)
     int sum = 0, factor = 31;
     for (int i = 0; i < strlen(key); ++i)
     {
-        sum = (sum + (key[i] * factor) % (mp->capacity)) % (mp->capacity); // sum = key[0]*factor+key[1]*factor**2+key[2]*factor**3+...  with suitable modulus, which is mp->capacity in our case
+        // sum = key[0]*factor+key[1]*factor**2+key[2]*factor**3+...  
+        // with suitable modulus, which is mp->capacity in our case
+        sum = (sum + (key[i] * factor) % (mp->capacity)) % (mp->capacity);
         factor = (factor * 31) % (mp->capacity);
     }
     return sum;
@@ -129,7 +131,7 @@ void initializeLookupTable(HashMap *lookupTable)
 
 // ------------------------------------------------- Lexer functions ----------------------------------------------------
 
-// Global line number tracker
+// global line number tracker
 int currentLineNumber = 1;
 
 FILE *getStream(twinBuffer *B)
@@ -146,48 +148,42 @@ void initializeTwinBuffer(twinBuffer *B, FILE *fp)
     B->currentPosition = 0;
     B->currentBuffer = 0;
     B->lineNumber = 1;
-    currentLineNumber = 1; // Initialize global line number
+    currentLineNumber = 1; // initialize global line number
     memset(B->buffer[0], '\0', MAX_BUFFER_SIZE);
     memset(B->buffer[1], '\0', MAX_BUFFER_SIZE);
 }
 
 char getNextChar(twinBuffer *B)
 {
-    // Checks if buffer needs refill
+    // check if buffer needs refill
     if (B->currentPosition >= MAX_BUFFER_SIZE - 1)
     {
         B->currentBuffer = 1 - B->currentBuffer;
         getStream(B);
         B->currentPosition = 0;
     }
-
-    // Gets current character
     char c = B->buffer[B->currentBuffer][B->currentPosition++];
-
-    // Handles newline tracking
+    // newline tracking
     if (c == '\n')
     {
         B->lineNumber++;
         currentLineNumber++;
     }
-
     return c;
 }
 
 void retract(twinBuffer *B, int n)
 {
-    // Handle invalid retraction amount
+    // invalid retraction amount
     if (n <= 0)
         return;
-
     int currentPos = B->currentPosition;
     int currentBuf = B->currentBuffer;
     int newlinesRetracted = 0;
-
-    // If we can retract within the current buffer
+    // retract within the current buffer
     if (currentPos >= n)
     {
-        // Count newlines in the retraction range
+        // newlines in the retraction range
         for (int i = currentPos - n; i < currentPos; i++)
         {
             if (i >= 0 && B->buffer[currentBuf][i] == '\n')
@@ -199,8 +195,8 @@ void retract(twinBuffer *B, int n)
     }
     else
     {
-        // We need to switch buffers
-        // First count newlines in current buffer's retraction range
+        // switch buffers
+        // newlines in current buffer's retraction range
         for (int i = 0; i < currentPos; i++)
         {
             if (B->buffer[currentBuf][i] == '\n')
@@ -208,21 +204,17 @@ void retract(twinBuffer *B, int n)
                 newlinesRetracted++;
             }
         }
-
-        // Retract what we can in current buffer
+        // retract what we can in current buffer
         n -= currentPos;
-
-        // Switch to other buffer
+        // switch to other buffer
         B->currentBuffer = 1 - currentBuf;
-
-        // Position at end of other buffer minus remaining retraction
+        // go to end of other buffer minus remaining retraction
         B->currentPosition = MAX_BUFFER_SIZE - 1 - n;
         if (B->currentPosition < 0)
         {
             B->currentPosition = 0;
         }
-
-        // Count newlines in other buffer's retraction range
+        // newlines in other buffer's retraction range
         for (int i = B->currentPosition; i < MAX_BUFFER_SIZE - 1; i++)
         {
             if (B->buffer[B->currentBuffer][i] == '\n')
@@ -231,8 +223,7 @@ void retract(twinBuffer *B, int n)
             }
         }
     }
-
-    // Adjust both line number trackers based on newlines retracted
+    // adjust both line number trackers based on newlines retracted
     B->lineNumber -= newlinesRetracted;
     currentLineNumber -= newlinesRetracted;
 }
@@ -403,8 +394,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown symbol <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -533,8 +525,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
                 }
                 else
                 {
-                    strcat(token.type, "TK_ERROR");
                     token.lineNumber = currentLineNumber;
+                    printf("Line no. %d : Error : Variable identifier is longer than the prescribed length of 20 characters.\n", token.lineNumber);
+                    strcat(token.type, "TK_ERROR");
                     return token;
                 }
             }
@@ -556,8 +549,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
                 }
                 else
                 {
-                    strcat(token.type, "TK_ERROR");
                     token.lineNumber = currentLineNumber;
+                    printf("Line no. %d : Error : Variable identifier is longer than the prescribed length of 20 characters.\n", token.lineNumber);
+                    strcat(token.type, "TK_ERROR");
                     return token;
                 }
                 token.lineNumber = currentLineNumber;
@@ -589,7 +583,11 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
+                // strcat(token.type, "TK_ERROR");
+                // token.lineNumber = currentLineNumber;
+                strcat(token.type, "TK_NUM");
+                token.lexeme[strlen(token.lexeme) - 2] = '\0';
+                retract(B, 2);
                 token.lineNumber = currentLineNumber;
                 return token;
             }
@@ -601,10 +599,11 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
-                token.lexeme[strlen(token.lexeme) - 1] = '\0';
-                retract(B, 1);
                 token.lineNumber = currentLineNumber;
+                token.lexeme[strlen(token.lexeme) - 1] = '\0';
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
+                retract(B, 1);
                 return token;
             }
             break;
@@ -633,8 +632,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -645,8 +645,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -659,8 +660,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -671,8 +673,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -697,8 +700,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -779,10 +783,11 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lexeme[strlen(token.lexeme) - 1] = '\0';
-                retract(B, 1);
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
+                retract(B, 1);
                 return token;
             }
             break;
@@ -795,10 +800,11 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lexeme[strlen(token.lexeme) - 1] = '\0';
-                retract(B, 1);
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
+                retract(B, 1);
                 return token;
             }
             break;
@@ -809,8 +815,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -823,8 +830,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -837,8 +845,9 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             }
             else
             {
-                strcat(token.type, "TK_ERROR");
                 token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown pattern <%s>\n", token.lineNumber, token.lexeme);
+                strcat(token.type, "TK_ERROR");
                 return token;
             }
             break;
@@ -852,9 +861,10 @@ tokenInfo getNextToken(twinBuffer *B, HashMap *lookupTable)
             else
             {
                 token.lexeme[strlen(token.lexeme) - 1] = '\0';
+                token.lineNumber = currentLineNumber;
+                printf("Line no. %d : Error : Unknown symbol <%s>\n", token.lineNumber, token.lexeme);
                 strcat(token.type, "TK_ERROR");
                 retract(B, 1);
-                token.lineNumber = currentLineNumber;
                 return token;
             }
             break;
@@ -880,34 +890,28 @@ void removeComments(char *testcaseFileName, char *cleanFileName)
 {
     FILE *inputFile, *outputFile;
     char currentChar;
-
     if ((inputFile = fopen(testcaseFileName, "r")) == NULL)
     {
         perror("Error opening input file");
         return;
     }
-
     if ((outputFile = fopen(cleanFileName, "w")) == NULL)
     {
         perror("Error opening output file");
         fclose(inputFile);
         return;
     }
-
     char line[MAX_LINE_SIZE];
     while (fgets(line, MAX_LINE_SIZE, inputFile) != NULL)
     {
         char *commentStart = strchr(line, '%');
-
         // If comment exists, terminate the line at the comment start
         if (commentStart != NULL)
             *commentStart = '\0';
-
         // Remove trailing whitespace
         int len = strlen(line);
         while (len > 0 && isspace((unsigned char)line[len - 1]))
             line[--len] = '\0';
-
         // Check if line is empty after removing comments and whitespace
         int isEmpty = 1;
         for (int i = 0; line[i] != '\0'; i++)
@@ -918,7 +922,6 @@ void removeComments(char *testcaseFileName, char *cleanFileName)
                 break;
             }
         }
-
         // Write non-empty lines to output file
         if (!isEmpty)
             fprintf(outputFile, "%s\n", line);
