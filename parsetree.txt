@@ -1,0 +1,44 @@
+lexeme               currentNode          lineno tokenName            valueIfNumber        parentNodeSymbol     isLeaf NodeSymbol          
+----                 <program>            ----  ----                 ----                 ROOT                 no    <program>           
+----                 <otherFunctions>     ----  ----                 ----                 <program>            no    <otherFunctions>    
+----                 <function>           ----  ----                 ----                 <otherFunctions>     no    <function>          
+                     TK_FUNID             7                          ---                  <function>           yes   TK_FUNID            
+----                 <input_par>          ----  ----                 ----                 <function>           no    <input_par>         
+                     TK_INPUT             7                          ---                  <input_par>          yes   TK_INPUT            
+                     TK_PARAMETER         7                          ---                  <input_par>          yes   TK_PARAMETER        
+                     TK_LIST              7                          ---                  <input_par>          yes   TK_LIST             
+                     TK_SQL               7                          ---                  <input_par>          yes   TK_SQL              
+----                 <parameter_list>     ----  ----                 ----                 <input_par>          no    <parameter_list>    
+----                 <dataType>           ----  ----                 ----                 <parameter_list>     no    <dataType>          
+----                 <primitiveDatatype>  ----  ----                 ----                 <dataType>           no    <primitiveDatatype> 
+                     TK_INT               7                          ---                  <primitiveDatatype>  yes   TK_INT              
+                     TK_ID                7                          ---                  <parameter_list>     yes   TK_ID               
+----                 <remaining_list>     ----  ----                 ----                 <parameter_list>     no    <remaining_list>    
+                     TK_COMMA             7                          ---                  <remaining_list>     yes   TK_COMMA            
+----                 <parameter_list>     ----  ----                 ----                 <remaining_list>     no    <parameter_list>    
+----                 <dataType>           ----  ----                 ----                 <parameter_list>     no    <dataType>          
+----                 <primitiveDatatype>  ----  ----                 ----                 <dataType>           no    <primitiveDatatype> 
+                     TK_INT               7                          ---                  <primitiveDatatype>  yes   TK_INT              
+                     TK_ID                7                          ---                  <parameter_list>     yes   TK_ID               
+----                 <remaining_list>     ----  ----                 ----                 <parameter_list>     no    <remaining_list>    
+                     TK_COMMA             7                          ---                  <remaining_list>     yes   TK_COMMA            
+----                 <parameter_list>     ----  ----                 ----                 <remaining_list>     no    <parameter_list>    
+----                 <dataType>           ----  ----                 ----                 <parameter_list>     no    <dataType>          
+----                 <primitiveDatatype>  ----  ----                 ----                 <dataType>           no    <primitiveDatatype> 
+                     TK_INT               7                          ---                  <primitiveDatatype>  yes   TK_INT              
+                     TK_ID                7                          ---                  <parameter_list>     yes   TK_ID               
+----                 <remaining_list>     ----  ----                 ----                 <parameter_list>     no    <remaining_list>    
+----                 EPS                  ----  ----                 ----                 <remaining_list>     no    EPS                 
+                     TK_SQR               7                          ---                  <input_par>          yes   TK_SQR              
+----                 <output_par>         ----  ----                 ----                 <function>           no    <output_par>        
+                     TK_OUTPUT            7                          ---                  <output_par>         yes   TK_OUTPUT           
+                     TK_PARAMETER         7                          ---                  <output_par>         yes   TK_PARAMETER        
+----                 TK_LIST              ----  ----                 ----                 <output_par>         no    TK_LIST             
+----                 TK_SQL               ----  ----                 ----                 <output_par>         no    TK_SQL              
+----                 <parameter_list>     ----  ----                 ----                 <output_par>         no    <parameter_list>    
+----                 TK_SQR               ----  ----                 ----                 <output_par>         no    TK_SQR              
+----                 TK_SEM               ----  ----                 ----                 <function>           no    TK_SEM              
+----                 <stmts>              ----  ----                 ----                 <function>           no    <stmts>             
+----                 TK_END               ----  ----                 ----                 <function>           no    TK_END              
+----                 <otherFunctions>     ----  ----                 ----                 <otherFunctions>     no    <otherFunctions>    
+----                 <mainFunction>       ----  ----                 ----                 <program>            no    <mainFunction>      
